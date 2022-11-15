@@ -1,10 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -30,29 +28,29 @@ var CLOUD_WAPPALYZER_TECHNOLOGIES = map[string]string{
 }
 
 func check_cloud_url(input string, result *Result) (isCloud bool, cloudName string, detectionType string, err error) {
-	var response *http.Response
+	//var response *http.Response
 	url_parsed, err := url.Parse(input)
 	if err != nil {
 		return
 	}
 	url_domain := url_parsed.Hostname()
 	isCloud, cloudName, detectionType, err = check_cloud_domain(url_domain, result)
-
-	if !isCloud {
-		if result.HttpResponse == nil {
-			response, err = whatcdn.httpClient.Get(input)
-			if err != nil {
-				return
-			}
-			result.HttpResponse = response
-		}
-		isCloud, cloudName, detectionType, err = check_cloud_with_http_response(result.HttpResponse, result)
-	}
+	//
+	//if !isCloud {
+	//	if result.HttpResponse == nil {
+	//		response, err = whatcdn.httpClient.Get(input)
+	//		if err != nil {
+	//			return
+	//		}
+	//		result.HttpResponse = response
+	//	}
+	//	isCloud, cloudName, detectionType, err = check_cloud_with_http_response(result.HttpResponse, result)
+	//}
 
 	return isCloud, cloudName, detectionType, err
 }
 func check_cloud_domain(input string, result *Result) (isCloud bool, cloudName string, detectionType string, err error) {
-	var response *http.Response
+	//var response *http.Response
 	var dnsresponse *retryabledns.DNSData
 	if result.DnsResponse == nil {
 		dnsresponse, err = whatcdn.dnsClient.Resolve(input)
@@ -64,16 +62,16 @@ func check_cloud_domain(input string, result *Result) (isCloud bool, cloudName s
 
 	isCloud, cloudName, detectionType, err = check_cloud_with_dns(result.DnsResponse, result)
 
-	if !isCloud && whatcdn.http_fallback {
-		if result.HttpResponse == nil {
-			response, err = whatcdn.httpClient.Get("https://" + input)
-			if err != nil {
-				return
-			}
-			result.HttpResponse = response
-		}
-		isCloud, cloudName, detectionType, err = check_cloud_with_http_response(result.HttpResponse, result)
-	}
+	//if !isCloud && whatcdn.http_fallback {
+	//	if result.HttpResponse == nil {
+	//		response, err = whatcdn.httpClient.Get("https://" + input)
+	//		if err != nil {
+	//			return
+	//		}
+	//		result.HttpResponse = response
+	//	}
+	//	isCloud, cloudName, detectionType, err = check_cloud_with_http_response(result.HttpResponse, result)
+	//}
 
 	return isCloud, cloudName, detectionType, err
 }
@@ -237,40 +235,41 @@ func check_cloud_with_dns(dnsResponse *retryabledns.DNSData, result *Result) (is
 	return isCloud, cloudName, detectionType, err
 }
 
-func check_cloud_with_wappalyzerResponse(wappalyzerResponse map[string]struct{}, result *Result) (isCloud bool, cloudName string, detectionType string) {
-	// matches := wappalyzerClient.Fingerprint(httpResponse.Header, body)
-	for technology := range wappalyzerResponse {
-		for cloud_tech, cloud_name_iter := range CLOUD_WAPPALYZER_TECHNOLOGIES {
-			// check if technology.lower contains a CDN technology
-			if strings.Contains(strings.ToLower(technology), cloud_tech) {
-				isCloud = true
-				cloudName = cloud_name_iter
-				detectionType = "http"
-				result.HasCloud = true
-				detectedCloud := DetectedCloud{
-					Name:                 cloudName,
-					DetectionMethod:      detectionType,
-					DetectedTechnologies: []string{technology},
-				}
-				result.DetectedCloud = append(result.DetectedCloud, detectedCloud)
-				return
-			}
-		}
-	}
-	return isCloud, cloudName, detectionType
-}
+//
+//func check_cloud_with_wappalyzerResponse(wappalyzerResponse map[string]struct{}, result *Result) (isCloud bool, cloudName string, detectionType string) {
+//	// matches := wappalyzerClient.Fingerprint(httpResponse.Header, body)
+//	for technology := range wappalyzerResponse {
+//		for cloud_tech, cloud_name_iter := range CLOUD_WAPPALYZER_TECHNOLOGIES {
+//			// check if technology.lower contains a CDN technology
+//			if strings.Contains(strings.ToLower(technology), cloud_tech) {
+//				isCloud = true
+//				cloudName = cloud_name_iter
+//				detectionType = "http"
+//				result.HasCloud = true
+//				detectedCloud := DetectedCloud{
+//					Name:                 cloudName,
+//					DetectionMethod:      detectionType,
+//					DetectedTechnologies: []string{technology},
+//				}
+//				result.DetectedCloud = append(result.DetectedCloud, detectedCloud)
+//				return
+//			}
+//		}
+//	}
+//	return isCloud, cloudName, detectionType
+//}
 
-func check_cloud_with_http_response(httpResponse *http.Response, result *Result) (isCloud bool, cloudName string, detectionType string, err error) {
-	body, err := ioutil.ReadAll(httpResponse.Body)
-	if err != nil {
-		return
-	}
-
-	if result.WappalyzerResponse == nil {
-		result.WappalyzerResponse = whatcdn.wappalyzerClient.Fingerprint(httpResponse.Header, body)
-	}
-
-	isCloud, cloudName, detectionType = check_cloud_with_wappalyzerResponse(result.WappalyzerResponse, result)
-
-	return isCloud, cloudName, detectionType, err
-}
+//func check_cloud_with_http_response(httpResponse *http.Response, result *Result) (isCloud bool, cloudName string, detectionType string, err error) {
+//	body, err := ioutil.ReadAll(httpResponse.Body)
+//	if err != nil {
+//		return
+//	}
+//
+//	if result.WappalyzerResponse == nil {
+//		result.WappalyzerResponse = whatcdn.wappalyzerClient.Fingerprint(httpResponse.Header, body)
+//	}
+//
+//	isCloud, cloudName, detectionType = check_cloud_with_wappalyzerResponse(result.WappalyzerResponse, result)
+//
+//	return isCloud, cloudName, detectionType, err
+//}

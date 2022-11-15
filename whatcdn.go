@@ -1,10 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -33,7 +31,7 @@ var CDN_WAPPALYZER_TECHNOLOGIES = map[string]string{
 }
 
 func check_cdn_url(input string, result *Result) (isCDN bool, CDNName string, detectionType string, err error) {
-	var response *http.Response
+	//var response *http.Response
 	url_parsed, err := url.Parse(input)
 	if err != nil {
 		return
@@ -41,21 +39,21 @@ func check_cdn_url(input string, result *Result) (isCDN bool, CDNName string, de
 	url_domain := url_parsed.Hostname()
 	isCDN, CDNName, detectionType, err = check_cdn_domain(url_domain, result)
 
-	if !isCDN {
-		if result.HttpResponse == nil {
-			response, err = whatcdn.httpClient.Get(input)
-			if err != nil {
-				return
-			}
-			result.HttpResponse = response
-		}
-		isCDN, CDNName, detectionType, err = check_cdn_with_http_response(result.HttpResponse, result)
-	}
+	//if !isCDN {
+	//	if result.HttpResponse == nil {
+	//		response, err = whatcdn.httpClient.Get(input)
+	//		if err != nil {
+	//			return
+	//		}
+	//		result.HttpResponse = response
+	//	}
+	//	isCDN, CDNName, detectionType, err = check_cdn_with_http_response(result.HttpResponse, result)
+	//}
 
 	return isCDN, CDNName, detectionType, err
 }
 func check_cdn_domain(input string, result *Result) (isCDN bool, CDNName string, detectionType string, err error) {
-	var response *http.Response
+	//var response *http.Response
 	var dnsresponse *retryabledns.DNSData
 	if result.DnsResponse == nil {
 		dnsresponse, err = whatcdn.dnsClient.Resolve(input)
@@ -67,16 +65,16 @@ func check_cdn_domain(input string, result *Result) (isCDN bool, CDNName string,
 
 	isCDN, CDNName, detectionType, err = check_cdn_with_dns(result.DnsResponse, result)
 
-	if !isCDN && whatcdn.http_fallback {
-		if result.HttpResponse == nil {
-			response, err = whatcdn.httpClient.Get("https://" + input)
-			if err != nil {
-				return
-			}
-			result.HttpResponse = response
-		}
-		isCDN, CDNName, detectionType, err = check_cdn_with_http_response(result.HttpResponse, result)
-	}
+	//if !isCDN && whatcdn.http_fallback {
+	//	if result.HttpResponse == nil {
+	//		response, err = whatcdn.httpClient.Get("https://" + input)
+	//		if err != nil {
+	//			return
+	//		}
+	//		result.HttpResponse = response
+	//	}
+	//	isCDN, CDNName, detectionType, err = check_cdn_with_http_response(result.HttpResponse, result)
+	//}
 
 	return isCDN, CDNName, detectionType, err
 }
@@ -221,40 +219,41 @@ func check_cdn_with_dns(dnsResponse *retryabledns.DNSData, result *Result) (isCD
 	return isCDN, CDNName, detectionType, err
 }
 
-func check_cdn_with_wappalyzerResponse(wappalyzerResponse map[string]struct{}, result *Result) (isCDN bool, CDNName string, detectionType string) {
-	// matches := wappalyzerClient.Fingerprint(httpResponse.Header, body)
-	for technology := range wappalyzerResponse {
-		for cdn_tech, cdn_name_iter := range CDN_WAPPALYZER_TECHNOLOGIES {
-			// check if technology.lower contains a CDN technology
-			if strings.Contains(strings.ToLower(technology), cdn_tech) {
-				isCDN = true
-				CDNName = cdn_name_iter
-				detectionType = "http"
-				result.HasCDN = true
-				detectedCDN := DetectedCDN{
-					Name:                 CDNName,
-					DetectionMethod:      detectionType,
-					DetectedTechnologies: []string{technology},
-				}
-				result.DetectedCDNs = append(result.DetectedCDNs, detectedCDN)
-				return
-			}
-		}
-	}
-	return isCDN, CDNName, detectionType
-}
+//
+//func check_cdn_with_wappalyzerResponse(wappalyzerResponse map[string]struct{}, result *Result) (isCDN bool, CDNName string, detectionType string) {
+//	// matches := wappalyzerClient.Fingerprint(httpResponse.Header, body)
+//	for technology := range wappalyzerResponse {
+//		for cdn_tech, cdn_name_iter := range CDN_WAPPALYZER_TECHNOLOGIES {
+//			// check if technology.lower contains a CDN technology
+//			if strings.Contains(strings.ToLower(technology), cdn_tech) {
+//				isCDN = true
+//				CDNName = cdn_name_iter
+//				detectionType = "http"
+//				result.HasCDN = true
+//				detectedCDN := DetectedCDN{
+//					Name:                 CDNName,
+//					DetectionMethod:      detectionType,
+//					DetectedTechnologies: []string{technology},
+//				}
+//				result.DetectedCDNs = append(result.DetectedCDNs, detectedCDN)
+//				return
+//			}
+//		}
+//	}
+//	return isCDN, CDNName, detectionType
+//}
 
-func check_cdn_with_http_response(httpResponse *http.Response, result *Result) (isCDN bool, CDNName string, detectionType string, err error) {
-	body, err := ioutil.ReadAll(httpResponse.Body)
-	if err != nil {
-		return
-	}
-
-	if result.WappalyzerResponse == nil {
-		result.WappalyzerResponse = whatcdn.wappalyzerClient.Fingerprint(httpResponse.Header, body)
-	}
-
-	isCDN, CDNName, detectionType = check_cdn_with_wappalyzerResponse(result.WappalyzerResponse, result)
-
-	return isCDN, CDNName, detectionType, err
-}
+//func check_cdn_with_http_response(httpResponse *http.Response, result *Result) (isCDN bool, CDNName string, detectionType string, err error) {
+//	body, err := ioutil.ReadAll(httpResponse.Body)
+//	if err != nil {
+//		return
+//	}
+//
+//	if result.WappalyzerResponse == nil {
+//		result.WappalyzerResponse = whatcdn.wappalyzerClient.Fingerprint(httpResponse.Header, body)
+//	}
+//
+//	isCDN, CDNName, detectionType = check_cdn_with_wappalyzerResponse(result.WappalyzerResponse, result)
+//
+//	return isCDN, CDNName, detectionType, err
+//}

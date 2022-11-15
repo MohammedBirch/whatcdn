@@ -16,7 +16,6 @@ import (
 	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/retryabledns"
 	"github.com/projectdiscovery/retryablehttp-go"
-	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 )
 
 var wg sync.WaitGroup
@@ -24,14 +23,14 @@ var wg sync.WaitGroup
 var DEFAULT_RESOLVERS = []string{"8.8.8.8:53", "8.8.4.4:53"}
 
 type WHATCDN struct {
-	dnsClient        *retryabledns.Client
-	httpClient       *retryablehttp.Client
-	wappalyzerClient *wappalyzer.Wappalyze
-	cdncheckClient   *cdncheck.Client
-	resolvers        []string
-	retries          int
-	http_fallback    bool
-	json_output      bool
+	dnsClient  *retryabledns.Client
+	httpClient *retryablehttp.Client
+	//wappalyzerClient *wappalyzer.Wappalyze
+	cdncheckClient *cdncheck.Client
+	resolvers      []string
+	retries        int
+	http_fallback  bool
+	json_output    bool
 }
 
 var whatcdn WHATCDN
@@ -65,10 +64,10 @@ func main() {
 		KillIdleConn:  true,
 	}
 
-	wappalyzerClient, err := wappalyzer.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	//wappalyzerClient, err := wappalyzer.New()
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 
 	cdncheckClient, err := cdncheck.NewWithCache()
 	if err != nil {
@@ -81,14 +80,14 @@ func main() {
 	}
 
 	whatcdn = WHATCDN{
-		resolvers:        DEFAULT_RESOLVERS,
-		retries:          max_retries,
-		dnsClient:        dnsClient,
-		httpClient:       retryablehttp.NewClient(HTTPOpts),
-		wappalyzerClient: wappalyzerClient,
-		cdncheckClient:   cdncheckClient,
-		http_fallback:    http_fallback,
-		json_output:      json_output,
+		resolvers:  DEFAULT_RESOLVERS,
+		retries:    max_retries,
+		dnsClient:  dnsClient,
+		httpClient: retryablehttp.NewClient(HTTPOpts),
+		//wappalyzerClient: wappalyzerClient,
+		cdncheckClient: cdncheckClient,
+		http_fallback:  http_fallback,
+		json_output:    json_output,
 	}
 
 	goroutines := make(chan struct{}, max_threads)
