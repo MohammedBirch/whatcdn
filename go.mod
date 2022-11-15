@@ -1,4 +1,4 @@
-module github.com/brenocss/whatcdn
+module github.com/MohammedBirch/whatcdn
 
 go 1.18
 
