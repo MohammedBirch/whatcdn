@@ -36,9 +36,14 @@ type WHATCDN struct {
 var whatcdn WHATCDN
 
 func main() {
+	go func() {
+		time.Sleep(time.Minute * 5)
+		log.Println("Exit...")
+		os.Exit(2)
+	}()
 	// usage ./whatcdn -i <192.168.0.1-> <-json>
 	// usage cat inputs | ./whatcdn  <-t 100> <-json>
-
+	// 解析参数
 	var (
 		input         string
 		max_threads   int
@@ -48,17 +53,17 @@ func main() {
 	)
 
 	flag.StringVar(&input, "i", "", "input to resolve/check")
-	flag.IntVar(&max_threads, "t", 10, "number of threads")
-	flag.BoolVar(&json_output, "json", false, "print json output")
-	flag.BoolVar(&http_fallback, "http-fallback", false, "print json output")
-	flag.IntVar(&max_retries, "retries", 3, "number of retries")
+	flag.IntVar(&max_threads, "t", 10, "number of threads")                   // 线程
+	flag.BoolVar(&json_output, "json", false, "print json output")            // 输出json格式
+	flag.BoolVar(&http_fallback, "http-fallback", false, "print json output") // 输出json格式
+	flag.IntVar(&max_retries, "retries", 2, "number of retries")              // 重试次数
 	// receber uma lista de resolvers
 	flag.Parse()
 
 	HTTPOpts := retryablehttp.Options{
 		RetryWaitMin:  1 * time.Second,
-		RetryWaitMax:  30 * time.Second,
-		Timeout:       30 * time.Second,
+		RetryWaitMax:  5 * time.Second,
+		Timeout:       5 * time.Second,
 		RetryMax:      max_retries,
 		RespReadLimit: 4096 * 5,
 		KillIdleConn:  true,
